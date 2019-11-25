@@ -17,10 +17,10 @@ pg.init()
 # center
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 # set program title
-pg.display.set_caption("oognuyh")
+pg.display.set_caption("snakegame")
 # set screen size and screen
-width = 300
-height = 300
+width = 800
+height = 800
 screen = pg.display.set_mode((width, height))
 # --------------------------------------------
 SPLASHFONT = pg.font.Font("PrStart.ttf", 40)

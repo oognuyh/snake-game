@@ -4,7 +4,7 @@
 # TODO: need to fix some bugs
 # screen delay loop - FIXED 19/11/24
 # self.grid[body[0]][body[1]] = 1 => list index out of range - FIXED 19/11/24
-# snake's structure have same coord like  [[27, 14], [28, 14], [28, 14], [28, 15]]
+# snake's structure have same coord like  [[27, 14], [28, 14], [28, 14], [28, 15]] - FIXED 19/11/25
 # --------------------------------------------
 import sys, os, random
 import heapq
@@ -12,6 +12,8 @@ import pygame as pg
 # --------------------------------------------
 # pygame initialize
 pg.init()
+# center
+os.environ['SDL_VIDEO_CENTERED'] = '1'
 # set program title
 pg.display.set_caption("snakegame")
 # set screen size and screen
@@ -93,7 +95,11 @@ def game():
             feed.randomly(snake.structure) # new feed
             path = Finder(snake, feed).find()
         
-        if not path: return # if no path, game over
+        if not path: # if no path, game over
+            snake.draw()
+            pg.display.flip()
+            pg.time.wait(1500) # delay 
+            is_running = False 
 
         pg.display.flip() # screen update
         pg.time.Clock().tick(FPS) # speed
@@ -235,21 +241,25 @@ class Snake:
         # LEFT T RIGHT
         #     DOWN
         tail = self.structure[TAIL]
+        
         up = add(tail, UP)
         down = add(tail, DOWN) 
         left = add(tail, LEFT)
         right = add(tail, RIGHT)
 
-        possible = [up, down, left, right]
-        for body in self.structure: # remove the snake's coordinates
-            if body in possible:
-                possible.remove(body)
-
-        for direction in possible:
-            if gridwidth - 1 < direction[0] or direction[0] < 0 or gridheight - 1 < direction[1] or direction[1] < 0:
-                possible.remove(direction)
-
+        directions = [up, down, left, right]
+        possible = []
+        grid = [[x, y] for x in range(gridwidth) for y in range(gridheight)]
+        
+        for direction in directions:
+            if direction in grid:
+                if direction not in self.structure:
+                    possible.append(direction)
+      
+        if not possible: return False
+        
         self.structure.append(random.choice(possible))
+        return True
 
     def draw(self):
         head = self.structure[HEAD] 
