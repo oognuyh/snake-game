@@ -150,10 +150,10 @@ class Finder:
         return False
 
     def is_in_open(self, element):
-        for exist in self.open:
-            if exist == element: # if already exist, compare
-                if exist > element:
-                    exist = element
+        for exist in range(len(self.open)):
+            if self.open[exist] == element: # if already exist, compare
+                if self.open[exist] > element:
+                    self.open[exist] = element
                 return True
         return False
 
