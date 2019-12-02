@@ -4,9 +4,10 @@
 # TODO: need to fix some bugs
 # screen delay loop - FIXED 19/11/24
 # self.grid[body[0]][body[1]] = 1 => list index out of range - FIXED 19/11/24
-# shrinked bugs - FIXED 19/11/25(problem in snake.grow())
-# grow [10, 3] or [-1, 3] -> list index out of range  - FIXED 19/11/25(problem in snake.grow() - logical error)
-# snake's structure have same coord like  [[27, 14], [28, 14], [28, 14], [28, 15]] - FIXED 19/11/25(problem in Finder() - added two start points)
+# shrinked bugs - FIXED 19/11/25(the problem with snake.grow())
+# grow [10, 3] or [-1, 3] -> list index out of range  - FIXED 19/11/25(the problem with snake.grow() - logical error)
+# snake's structure have same coord like  [[27, 14], [28, 14], [28, 14], [28, 15]] - FIXED 19/11/25(the problem with Finder() - added two start points)
+# some lags - FIXED 19/12/02(the problem with try_hardest()) 
 # --------------------------------------------
 import sys, os, random
 import heapq
@@ -17,7 +18,7 @@ pg.init()
 # center
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 # set program title
-pg.display.set_caption("snakegame")
+pg.display.set_caption("upgradedsnakegame")
 # set screen size and screen
 width = 800
 height = 800
@@ -37,7 +38,7 @@ WHITE = (255, 255, 255)
 FPS = 60
 # --------------------------------------------
 # set grid size 
-cellsize = 20
+cellsize = 40
 gridwidth = width // cellsize
 gridheight = height // cellsize
 # --------------------------------------------
@@ -46,7 +47,6 @@ UP = [0, -1]
 DOWN = [0, 1]
 LEFT = [-1, 0]
 RIGHT = [1, 0]
-DIRECTION = [UP, DOWN, LEFT, RIGHT]
 # --------------------------------------------
 # define snake's structure index
 HEAD = 0
@@ -78,36 +78,35 @@ def game():
     path = Finder(snake, feed).find()
     if not path: return # if no path, game over
 
-    is_running = True
-
-    while is_running:
+    while True:
         for event in pg.event.get():
             if event.type == pg.QUIT: # terminate program
-                is_running = False
+                pg.quit()
                 sys.exit() 
         
+        if not path: # if path has no value, Finder updates the snake location and find again
+            path = Finder(snake, feed).find()
+        
+        if path: # if path, move
+            coord = path.pop()
+            snake.move(coord) # the snake moves
+
+        if snake.is_dead(): # if snake is dead, game over
+            snake.draw()
+            pg.display.flip() # screen update
+            pg.time.wait(1500) # delay 1.5 sec
+            break
+
         screen.fill(BLACK) # fill background
         snake.draw() # draw the snake
         feed.draw() # draw the feed
-        
-        coord = path.pop()
-        snake.move(coord) # the snake moves
-      
+
         if snake.structure[HEAD] == feed.coord: # if the snake ate the feed, set feed location randomly and find new path
             if not snake.grow(): # if the snake can't grow, gameover
                 return
             feed.randomly(snake.structure) # new feed
             path = Finder(snake, feed).find()
-            # print(snake.structure)
-        
-        if not path: # if path has no value, Finder updates the snake location and find again
-            path = Finder(snake, feed).find()
-        
-        if snake.is_dead(): 
-            snake.draw()
-            pg.display.flip() # screen update
-            pg.time.wait(1500) # delay 1.5 sec
-            is_running = False 
+            # print(snake.structure) 
         
         pg.display.flip() # screen update
         pg.time.Clock().tick(FPS) # speed
@@ -159,7 +158,7 @@ class Finder:
 
     def calculate_heuristic(self, coord):
         # calculate H cost using Manhattan distance(xDiff + yDiff)
-        return (abs(coord[0] - self.feed[0]) + abs(coord[1] - self.feed[1])) * 10  
+        return (abs(coord[0] - self.feed[0]) + abs(coord[1] - self.feed[1])) * 20   
 
     def neighbors(self, obj):
         # visit neighbors(4 direction)
@@ -245,18 +244,16 @@ class Finder:
 
         directions = [up, down, left, right]
         possible = []
-        path = []
-        here = [[x, y] for x in range(gridwidth) for y in range(gridheight)]
-        
+
         for direction in directions:
-            if direction in here:
-                if not self.grid[direction[0]][direction[1]]:
+            if  -1 < direction[0]  and - 1 < direction[1] and direction[0] < gridwidth and direction[1] <  gridheight: # valid
+                if not self.grid[direction[0]][direction[1]]: # not body
                     possible.append(direction)
-        if possible:
-            path.append(random.choice(possible))
-        
-        return path
-        
+
+        if possible: # if possible, return one path randomly
+            return [random.choice(possible)]
+        else:
+            return [] # if not possible, return no path
             
 class Snake:
     def __init__(self):
@@ -271,25 +268,21 @@ class Snake:
     
     def is_dead(self):
         head = self.structure[HEAD]
-        
+    
         up = add(head, UP)
         down = add(head, DOWN) 
         left = add(head, LEFT)
         right = add(head, RIGHT)
-
+        
         directions = [up, down, left, right]
-        possible = []
-        grid = [[x, y] for x in range(gridwidth) for y in range(gridheight)]
-        
-        for direction in directions:
-            if direction in grid:
-                if direction not in self.structure:
-                    possible.append(direction)
+        around = 0
 
-        if len(possible) == 0: # dead
-            return True
-        
-        return False
+        for direction in directions:
+            if  -1 < direction[0]  and - 1 < direction[1] and direction[0] < gridwidth and direction[1] <  gridheight: # valid
+                if direction not in self.structure:
+                    around = around + 1
+
+        return around == 0
 
     def grow(self):
         # when the snake ate the feed, add a body
