@@ -8,7 +8,7 @@ from pygame.locals import *
 # pygame initialize
 pg.init()
 # set program title
-pg.display.set_caption("oognuyh")
+pg.display.set_caption("basicsnakegame")
 # set screen size and screen
 width = 800
 height = 800
@@ -28,7 +28,7 @@ WHITE = (255, 255, 255)
 FPS = 60
 # --------------------------------------------
 # set grid size 
-cellsize = 20
+cellsize = 40
 gridwidth = width // cellsize
 gridheight = height // cellsize
 # --------------------------------------------
@@ -73,7 +73,9 @@ def game():
             if event.type == pg.QUIT: # terminate program
                 is_running = False
                 sys.exit() 
-
+        
+        if snake.is_dead(): is_running = False
+        
         screen.fill(BLACK) # fill background
         snake.draw() # draw the snake
         feed.draw() # draw the feed
@@ -90,10 +92,9 @@ def game():
         
         if snake.structure[HEAD] == feed.coord:
             feed.randomly(snake.structure)
-            snake.grow()
+            if not snake.grow():
+                is_running = False
         
-        if snake.is_dead(): is_running = False
-
         pg.display.flip() # screen update
         pg.time.Clock().tick(FPS) # speed
 # --------------------------------------------   
@@ -119,19 +120,16 @@ class Snake:
         left = add(head, LEFT)
         right = add(head, RIGHT)
 
-        possible = [up, down, left, right]
-        for body in self.structure: # remove the snake's coordinates
-            if body in possible:
-                possible.remove(body)
+        directions = [up, down, left, right]
 
-        for direction in possible: # not valid coord
-            if gridwidth - 1 < direction[0] or direction[0] < 0 or gridheight - 1 < direction[1] or direction[1] < 0:
-                possible.remove(direction)
+        around = 0
 
-        if len(possible) == 0: # dead
-            return True
-        
-        return False
+        for direction in directions:
+            if -1 < direction[0] and -1 < direction[1] and direction[0] < gridwidth and direction[1] < gridheight:
+                if direction not in self.structure:
+                    around = around + 1
+
+        return around == 0
 
     def grow(self):
         # when the snake ate the feed, add a body
@@ -139,21 +137,25 @@ class Snake:
         # LEFT T RIGHT
         #     DOWN
         tail = self.structure[TAIL]
+        
         up = add(tail, UP)
         down = add(tail, DOWN) 
         left = add(tail, LEFT)
         right = add(tail, RIGHT)
 
-        possible = [up, down, left, right]
-        for body in self.structure: # remove the snake's coordinates
-            if body in possible:
-                possible.remove(body)
+        directions = [up, down, left, right]
+        possible = []
 
-        for direction in possible:
-            if gridwidth - 1 < direction[0] or direction[0] < 0 or gridheight - 1 < direction[1] or direction[1] < 0:
-                possible.remove(direction)
-
+        for direction in directions:
+            if -1 < direction[0] and -1 < direction[1] and direction[0] < gridwidth and direction[1] < gridheight:
+                if direction not in self.structure:
+                    possible.append(direction)
+              
+        if not possible: return False
+        
         self.structure.append(random.choice(possible))
+        
+        return True
 
     def draw(self):
         head = self.structure[HEAD] 
@@ -185,7 +187,6 @@ def add(one, another):
         result.append(a + b)
     
     return result
-
 # --------------------------------------------
 if __name__ == "__main__":
     splash() # display splash

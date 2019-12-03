@@ -158,7 +158,7 @@ class Finder:
 
     def calculate_heuristic(self, coord):
         # calculate H cost using Manhattan distance(xDiff + yDiff)
-        return (abs(coord[0] - self.feed[0]) + abs(coord[1] - self.feed[1])) * 20   
+        return (abs(coord[0] - self.feed[0]) + abs(coord[1] - self.feed[1])) * 10   
 
     def neighbors(self, obj):
         # visit neighbors(4 direction)
@@ -298,16 +298,16 @@ class Snake:
 
         directions = [up, down, left, right]
         possible = []
-        grid = [[x, y] for x in range(gridwidth) for y in range(gridheight)]
-        
+
         for direction in directions:
-            if direction in grid:
+            if -1 < direction[0] and -1 < direction[1] and direction[0] < gridwidth and direction[1] < gridheight:
                 if direction not in self.structure:
                     possible.append(direction)
-      
+              
         if not possible: return False
         
         self.structure.append(random.choice(possible))
+        
         return True
 
     def draw(self):

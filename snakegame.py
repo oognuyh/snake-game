@@ -15,7 +15,7 @@ pg.init()
 # center
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 # set program title
-pg.display.set_caption("snakegame")
+pg.display.set_caption("astarsnakegame")
 # set screen size and screen
 width = 800
 height = 800
@@ -35,7 +35,7 @@ WHITE = (255, 255, 255)
 FPS = 60
 # --------------------------------------------
 # set grid size 
-cellsize = 20
+cellsize = 40
 gridwidth = width // cellsize
 gridheight = height // cellsize
 # --------------------------------------------
@@ -87,16 +87,17 @@ def game():
         screen.fill(BLACK) # fill background
         snake.draw() # draw the snake
         feed.draw() # draw the feed
-        
+
         coord = path.pop()
         snake.move(coord) 
         if snake.structure[HEAD] == feed.coord: # if the snake ate the feed, set feed location randomly and find new path
             snake.grow()
             feed.randomly(snake.structure) # new feed
             path = Finder(snake, feed).find()
-        
+
         if not path: # if no path, game over
             snake.draw()
+            feed.draw()
             pg.display.flip()
             pg.time.wait(1500) # delay 
             is_running = False 
@@ -249,16 +250,16 @@ class Snake:
 
         directions = [up, down, left, right]
         possible = []
-        grid = [[x, y] for x in range(gridwidth) for y in range(gridheight)]
-        
+
         for direction in directions:
-            if direction in grid:
+            if -1 < direction[0] and -1 < direction[1] and direction[0] < gridwidth and direction[1] < gridheight:
                 if direction not in self.structure:
                     possible.append(direction)
-      
+              
         if not possible: return False
         
         self.structure.append(random.choice(possible))
+        
         return True
 
     def draw(self):
