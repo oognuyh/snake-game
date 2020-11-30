@@ -1,4 +1,4 @@
-# Snake Game
+# **Snake Game**
 Three versions of the snake game with A* algorithm using python.
 
 ## Features
