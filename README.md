@@ -1,13 +1,25 @@
 # Snake Game
-Three versions of the snake game with A* algorithm using python
+Three versions of the snake game with A* algorithm using python.
 
 ## Features
-  * In the basic version, you can move the snake yourself
+  * In the basic version, you can move the snake yourself with keyboard arrow keys.
   * In the A* version, the snake uses the A* algorithm to reach its prey.
   * In A* + Random version, the snake uses the A* algorithm to approach its prey and move randomly if no path is visible.
   
 ## Usage
-
+ ```
+ // if pygame is not installed
+ pip3 install pygame
+ 
+ // snake game and PrStart.ttf(Font) files must be in the same path
+ python3 snake_file_name.py
+ ```
+  
+ * Color
+   * Red : Snake's head
+   * Grey : Snake's Body
+   * Yellow : Prey
+ 
 ## Demo
 |Basic| A* |A* and Ramdom|
 |:---:|:--:|:-----------:|
